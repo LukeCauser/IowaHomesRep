@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1565776399447.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "42|27|50|0|\n",
+    "hash" : "4150912266",
+    "id" : "9AABBDA8",
+    "lastKnownWriteTime" : 1565780805,
+    "last_content_update" : 1565780805797,
+    "path" : "C:/Users/Admin/Desktop/IowaHomes/R/IowaHomesPredictionsShinySQL.r",
+    "project_path" : "R/IowaHomesPredictionsShinySQL.r",
+    "properties" : {
+        "cursorPosition" : "56,32",
+        "scrollLine" : "34"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

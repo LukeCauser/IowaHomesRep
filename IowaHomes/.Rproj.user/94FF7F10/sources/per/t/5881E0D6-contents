@@ -1,0 +1,94 @@
+#install.packages('kknn')
+##install.packages("shiny")
+#install.packages("RMySQL")
+#install.packages("dbConnect")
+library(kknn)
+library(shiny)
+library(RMySQL)
+library(dbConnect)
+
+
+ui <- shinyUI(fluidPage(
+  titlePanel("Iowa Homes Price Calculator"),
+  
+  
+  sidebarLayout(
+    
+    # Sidebar panel for inputs ----
+    sidebarPanel(
+      
+      # Input: Slider for the number of bins ----
+      numericInput(inputId = "OverallQual", label = "Overall Quality", value = 0, min = 0, step = 1),
+      numericInput(inputId = "GrLivArea", label = "Above grade (ground) living area in square feet", value = 0, min = 0, step = 1),
+      numericInput(inputId = "GarageArea", label = "Size of garage in square feet", value = 0, min = 0, step = 1),
+      numericInput(inputId = "TotalBsmtSF", label = "Total square feet of basement area", value = 0, min = 0, step = 1),
+      numericInput(inputId = "X1stFlrSF", label = "Area of first floor in square", value = 0, min = 0, step = 1),
+      numericInput(inputId = "FullBath", label = "Number of full bathrooms", value = 0, min = 0, step = 1),
+      numericInput(inputId = "TotRmsAbvGrd", label = "Total number of rooms above ground", value = 0, min = 0, step = 1),
+      numericInput(inputId = "YearBuilt", label = "Year house was built", value = 0, min = 0, step = 1),
+      numericInput(inputId = "YearRemodAdd", label = "Year house was remodelled", value = 0, min = 0, step = 1)
+    ),
+    
+    # Main panel for displaying outputs ----
+    mainPanel(
+      
+      textOutput(outputId = "prediction2")
+    )
+  )
+))
+
+
+#'Connecting to a database
+db_connection<- function(){
+  con = dbConnect(MySQL(), user='root', password='password', dbname='iowahomedatabase', host='localhost', port=3306)
+# dbListTables(con)
+
+  query <- ("SELECT SalePrice, OverallQual, GrLivArea, GarageArea, TotalBsmtSF, X1stFlrSF, FullBath, TotRmsAbvGrd, YearBuilt, YearRemodAdd FROM Training")
+  useful_data <- dbGetQuery(con, query)
+  dbDisconnect(con)
+  return(useful_data)
+}
+
+get_prediction <- function(input){
+  # <- c(input$OverallQual, input$GrLivArea, input$ExterQual, input$GarageArea,
+  #             input$TotalBsmtSF, input$X1stFlrSF, input$FullBath, input$TotRmsAbvGrd,
+  #            input$YearBuilt, input$YearRemodAdd)
+  
+  
+  salesPrice <- useful_data[ ,1]
+  colnames(useful_data) <- c("SalePrice", colnames(useful_data[,-1]))
+  
+  k_value <- floor(sqrt(nrow(useful_data)))
+  
+  model <- train.kknn(formula = SalePrice~., data=useful_data, kmax=k_value, kernel = "optimal")
+  
+  
+  new_dataframe <- data.frame(input$OverallQual, input$GrLivArea, input$GarageArea,
+                              input$TotalBsmtSF, input$X1stFlrSF, input$FullBath, input$TotRmsAbvGrd,
+                              input$YearBuilt, input$YearRemodAdd)
+  names(new_dataframe) <- c("OverallQual", "GrLivArea",  "GarageArea", "TotalBsmtSF", "X1stFlrSF", "FullBath", "TotRmsAbvGrd", "YearBuilt", "YearRemodAdd")
+  
+  prediction2<- predict(model, new_dataframe)
+  #str(prediction2)
+  
+  return (round(prediction2, digits = -2))
+}
+
+
+server <- function(input, output) {
+  output$prediction2 <- renderText({
+    paste("Predicted Value of \U00A3", get_prediction(input))
+  })
+  
+}
+
+useful_data <- db_connection()
+
+shinyApp(ui, server)
+
+
+
+
+
+
+
